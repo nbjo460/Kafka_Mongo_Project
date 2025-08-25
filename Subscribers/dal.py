@@ -11,6 +11,8 @@ def connection(func):
         client = None
         try:
             client = MongoClient(dal.URI)
+            client.admin.command("ping")
+            print("Connected successfully")
             print("opened")
             db = client[dal.DBNAME]
             result = func(dal, db,*args, **kwargs)
@@ -31,32 +33,51 @@ class Dal:
     Object that make connection with mongodb server, and get data.
     """
     def __init__(self):
-        self.URI = os.getenv("HOST", "mongodb+srv://IRGC:iraniraniran@iranmaldb.gurutam.mongodb.net/")
-        self.USER = os.getenv("USER", "IRGC")
+        self.USER = os.getenv("USER", "root")
+        self.PASSWORD = os.getenv("PASSWORD", "menachemYarhi")
+        self.HOST = os.getenv("HOST")
+        self.PORT = os.getenv("PORT", 27017)
+
+        self.URI = os.getenv("URI", f"mongodb://{self.USER}:{self.PASSWORD}@{self.HOST}:{self.PORT}")
         self.DBNAME = os.getenv("DBNAME", "IranMalDB")
-        self.PASSWORD = os.getenv("PASSWORD", "iraniraniran")
 
         self.INTERESTING_COLLECTION = "Interesting"
         self.NOT_INTERESTING_COLLECTION = "NotInteresting"
 
 
     @connection
-    def get_tweets(self, db):
+    def get_all_messages_interesting(self, db):
         """
-        Ruturns list of all tweets.
-        :return: list
+        Returns all the messages of interesting.
+        :return: json
         """
-        print("Fetching tweets.")
-        tweets = list(collection.find())
-        print(f"{len(tweets)} tweets loaded.")
-        return tweets
+        print("Fetching messages.")
+        collection = db[self.INTERESTING_COLLECTION]
+        messages = list(collection.find())
+        print(f"{len(messages)} messages loaded.")
+        return messages
+
+    @connection
+    def get_all_messages_not_interesting(self, db):
+        """
+                Returns all the messages of not interesting.
+                :return: json
+                """
+        print("Fetching messages.")
+        collection = db[self.NOT_INTERESTING_COLLECTION]
+        messages = list(collection.find())
+        print(f"{len(messages)} messages loaded.")
+        return messages
+
 
     @connection
     def send_interesting(self,db, message):
         collection = db[self.INTERESTING_COLLECTION]
+        collection.insert_one(message)
 
     @connection
     def send_not_interesting(self, db, message):
         collection = db[self.NOT_INTERESTING_COLLECTION]
+        collection.insert_one(message)
 
 
