@@ -1,5 +1,6 @@
 import os
 import json
+import parameters as params
 from pymongo import MongoClient
 
 def connection(func):
@@ -41,8 +42,7 @@ class Dal:
         self.URI = os.getenv("URI", f"mongodb://{self.USER}:{self.PASSWORD}@{self.HOST}:{self.PORT}")
         self.DBNAME = os.getenv("DBNAME", "IranMalDB")
 
-        self.INTERESTING_COLLECTION = "Interesting"
-        self.NOT_INTERESTING_COLLECTION = "NotInteresting"
+
 
 
     @connection
@@ -52,7 +52,7 @@ class Dal:
         :return: json
         """
         print("Fetching messages.")
-        collection = db[self.INTERESTING_COLLECTION]
+        collection = db[params.INTERESTING_COLLECTION]
         messages = list(collection.find())
         print(f"{len(messages)} messages loaded.")
         return messages
@@ -64,7 +64,7 @@ class Dal:
                 :return: json
                 """
         print("Fetching messages.")
-        collection = db[self.NOT_INTERESTING_COLLECTION]
+        collection = db[params.NOT_INTERESTING_COLLECTION]
         messages = list(collection.find())
         print(f"{len(messages)} messages loaded.")
         return messages
@@ -72,12 +72,12 @@ class Dal:
 
     @connection
     def send_interesting(self,db, message):
-        collection = db[self.INTERESTING_COLLECTION]
+        collection = db[params.INTERESTING_COLLECTION]
         collection.insert_one(message)
 
     @connection
     def send_not_interesting(self, db, message):
-        collection = db[self.NOT_INTERESTING_COLLECTION]
+        collection = db[params.NOT_INTERESTING_COLLECTION]
         collection.insert_one(message)
 
 

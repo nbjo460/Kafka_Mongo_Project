@@ -1,5 +1,6 @@
 from datetime import datetime
 from kafka import KafkaConsumer
+import parameters as params
 from dal import Dal
 
 import json
@@ -12,7 +13,7 @@ def get_consumer_events(topic):
     consumer = KafkaConsumer(topic,
                              group_id='my-group',
                              value_deserializer=lambda m: json.loads(m.decode('utf-8')),
-                             bootstrap_servers=['localhost:9092']
+                             bootstrap_servers=[f'{params.KAFKA_HOST}:{params.KAFKA_PORT}']
                              )
     return consumer
 
@@ -23,9 +24,9 @@ def print_messages(events):
         timestamp = datetime.timestamp(datetime.now())
         message_json = {timestamp :message.value}
 
-        if message.topic == "Interesting":
+        if message.topic == params.INTERESTING_COLLECTION:
             dal.send_interesting(message_json)
-        elif message.topic == "NotInteresting":
+        elif message.topic == params.NOT_INTERESTING_COLLECTION:
             dal.send_not_interesting(message_json)
 
 
@@ -40,9 +41,7 @@ def consumer_with_auto_commit(topic):
 
     events = get_consumer_events(topic)
     print_messages(events)
-if __name__ == '__main__':
-    # logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
-    # logging.info("Consumer app started")
 
-    consumer_with_auto_commit("topic1")
-    # logging.info("consumer_with_auto_commit completed")
+if __name__ == '__main__':
+    consumer_with_auto_commit(params.INTERESTING_COLLECTION)
+    consumer_with_auto_commit(params.NOT_INTERESTING_COLLECTION)
