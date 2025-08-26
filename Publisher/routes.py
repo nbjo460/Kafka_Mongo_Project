@@ -1,16 +1,19 @@
 import fastapi
+from newsgroups import NewsGroups
+
 
 app = fastapi.FastAPI()
-class Routes:
-    def __init__(self):
-        pass
-    @app.get("/")
-    def root(self):
-        return {}
-    @app.get("/load")
-    def load_db(self):
-        """
-        For load the data.
-        :return:
-        """
-        return Manager().get_data()
+news_manager = NewsGroups()
+@app.get("/")
+def root():
+    return {"status" : "HELLO"}
+
+@app.get("/submit-message/{news_num}")
+def submit_message(news_num):
+    """
+    For load the data.
+    :return:
+    """
+    news_num = int(news_num)
+    news_manager.send_news(news_num)
+    return {"status" : f"Succeed submit {news_num*2} news."}

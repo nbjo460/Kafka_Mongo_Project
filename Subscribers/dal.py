@@ -14,7 +14,7 @@ def connection(func):
             client = MongoClient(dal.URI)
             client.admin.command("ping")
             print("Connected successfully")
-            print("opened")
+            # print("opened")
             db = client[dal.DBNAME]
             result = func(dal, db,*args, **kwargs)
             return result
@@ -40,7 +40,7 @@ class Dal:
         self.PORT = os.getenv("PORT", 27017)
 
         self.URI = os.getenv("URI", f"mongodb://{self.USER}:{self.PASSWORD}@{self.HOST}:{self.PORT}")
-        self.DBNAME = os.getenv("DBNAME", "IranMalDB")
+        self.DBNAME = os.getenv("DBNAME", "KafkaTest")
 
 
 
@@ -80,4 +80,8 @@ class Dal:
         collection = db[params.NOT_INTERESTING_COLLECTION]
         collection.insert_one(message)
 
+    @connection
+    def send_messages(self, db, _interesting_messages : list, _not_interesting_messages : list):
+        db[params.INTERESTING_COLLECTION].insert_many(_interesting_messages)
+        db[params.NOT_INTERESTING_COLLECTION].insert_many(_not_interesting_messages)
 

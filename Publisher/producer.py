@@ -9,14 +9,15 @@ This file contains the sample code which publishes message to the Kafka brokers.
 # Import all the required packages
 import json
 from kafka import KafkaProducer
-
+import parameters as params
 
 def get_producer_config():
     # The Producer object requires the Kafka server, Json serializer
-    producer = KafkaProducer(bootstrap_servers=['localhost:9092'],
+    url = f'{params.KAFKA_HOST}:{params.KAFKA_PORT}'
+    produce = KafkaProducer(bootstrap_servers=[url],
                              value_serializer=lambda x:
                              json.dumps(x).encode('utf-8'))
-    return producer
+    return produce
 
 # Publish json messages
 def publish_message(producer, topic, message):
@@ -42,21 +43,25 @@ def publish_message_with_key(producer,topic,key,message):
     """
     producer.send(topic, key=key, value=message)
 
+def send_interesting_message(message):
+    produce = get_producer_config()
+    publish_message(produce, params.INTERESTING_COLLECTION, message)
+    produce.flush()
+
+def send_not_interesting_message(message):
+    produce = get_producer_config()
+    publish_message(produce, params.NOT_INTERESTING_COLLECTION, message)
+    produce.flush()
 
 if __name__ == '__main__':
 
     # Create the producer object with basic configurations
     producer = get_producer_config()
-    event = {"App":"WIIII"}
-    event_1 = {"App": "WIIII"}
-    event_2 = {"Game": {3:"WIIII"}}
 
     #Publish message to a topic
-    publish_message(get_producer_config(),"topic1",event)
 
     #Publish message to a topic with key to enable hashed partitioning
-    publish_message_with_key(get_producer_config(),"topic1",b"client1", event_1)
-    publish_message(get_producer_config(), "topic1", event_2)
+    publish_message_with_key(get_producer_config(),"topic1",b"client1", {3:3})
 
     # block until all async messages are sent
     producer.flush()
