@@ -7,7 +7,6 @@ import json
 
 dal = Dal()
 def get_consumer_events(topic):
-    # logging.info("Creating Consumer Object ..")
     # The consumer object contains the topic name, json deserializer,Kafka servers
     # and kafka time out in ms, Stops the iteration if no message after 1 sec
     consumer = KafkaConsumer(topic,

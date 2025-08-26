@@ -36,7 +36,7 @@ class Dal:
     def __init__(self):
         self.USER = os.getenv("USER", "root")
         self.PASSWORD = os.getenv("PASSWORD", "menachemYarhi")
-        self.HOST = os.getenv("HOST")
+        self.HOST = os.getenv("HOST", "localhost")
         self.PORT = os.getenv("PORT", 27017)
 
         self.URI = os.getenv("URI", f"mongodb://{self.USER}:{self.PASSWORD}@{self.HOST}:{self.PORT}")
