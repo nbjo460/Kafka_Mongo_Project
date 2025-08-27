@@ -14,7 +14,6 @@ def connection(func):
             client = MongoClient(dal.URI)
             client.admin.command("ping")
             print("Connected successfully")
-            # print("opened")
             db = client[dal.DBNAME]
             result = func(dal, db,*args, **kwargs)
             return result
@@ -34,54 +33,66 @@ class Dal:
     Object that make connection with mongodb server, and get data.
     """
     def __init__(self):
-        self.USER = os.getenv("USER", "root")
-        self.PASSWORD = os.getenv("PASSWORD", "menachemYarhi")
-        self.HOST = os.getenv("HOST", "localhost")
-        self.PORT = os.getenv("PORT", 27017)
+        self.USER = params.MONGO_USER
+        self.PASSWORD = params.MONGO_PASSWORD
+        self.HOST = params.MONGO_HOST
+        self.PORT = params.MONGO_PORT
+        self.TOPIC = params.KAFKA_TOPIC
 
-        self.URI = os.getenv("URI", f"mongodb://{self.USER}:{self.PASSWORD}@{self.HOST}:{self.PORT}")
-        self.DBNAME = os.getenv("DBNAME", "KafkaTest")
+        self.URI = params.MONGO_URI
+        self.DBNAME = params.MONGO_DBNAME
 
 
 
+
+    # @connection
+    # def get_all_messages_interesting(self, db):
+    #     """
+    #     Returns all the messages of interesting.
+    #     :return: json
+    #     """
+    #     print("Fetching messages.")
+    #     collection = db[params.INTERESTING_COLLECTION]
+    #     messages = list(collection.find({}, {"_id":0}))
+    #     print(f"{len(messages)} messages loaded.")
+    #     return messages
+    #
+    # @connection
+    # def get_all_messages_not_interesting(self, db):
+    #     """
+    #             Returns all the messages of not interesting.
+    #             :return: json
+    #             """
+    #     print("Fetching messages.")
+    #     collection = db[params.NOT_INTERESTING_COLLECTION]
+    #     messages = list(collection.find({},{"_id":0}))
+    #     print(f"{len(messages)} messages loaded.")
+    #     return messages
+
+    #
+    # @connection
+    # def send_interesting(self,db, message):
+    #     collection = db[params.INTERESTING_COLLECTION]
+    #     collection.insert_one(message)
+    #
+    # @connection
+    # def send_not_interesting(self, db, message):
+    #     collection = db[params.NOT_INTERESTING_COLLECTION]
+    #     collection.insert_one(message)
 
     @connection
-    def get_all_messages_interesting(self, db):
+    def get_all_messages(self, db):
         """
-        Returns all the messages of interesting.
+        Returns all the messages from topic.
         :return: json
         """
         print("Fetching messages.")
-        collection = db[params.INTERESTING_COLLECTION]
-        messages = list(collection.find())
+        collection = db[self.TOPIC]
+        messages = list(collection.find({}, {"_id":0}))
         print(f"{len(messages)} messages loaded.")
         return messages
 
     @connection
-    def get_all_messages_not_interesting(self, db):
-        """
-                Returns all the messages of not interesting.
-                :return: json
-                """
-        print("Fetching messages.")
-        collection = db[params.NOT_INTERESTING_COLLECTION]
-        messages = list(collection.find())
-        print(f"{len(messages)} messages loaded.")
-        return messages
-
-
-    @connection
-    def send_interesting(self,db, message):
-        collection = db[params.INTERESTING_COLLECTION]
-        collection.insert_one(message)
-
-    @connection
-    def send_not_interesting(self, db, message):
-        collection = db[params.NOT_INTERESTING_COLLECTION]
-        collection.insert_one(message)
-
-    @connection
-    def send_messages(self, db, _interesting_messages : list, _not_interesting_messages : list):
-        db[params.INTERESTING_COLLECTION].insert_many(_interesting_messages)
-        db[params.NOT_INTERESTING_COLLECTION].insert_many(_not_interesting_messages)
+    def send_message(self, db, message):
+        db[self.TOPIC].insert_one(message)
 
